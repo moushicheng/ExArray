@@ -43,7 +43,7 @@
      let _c =
        config.length > 1
          ? () => {
-             return new ExArr();
+             return new ExArr$1();
            }
          : () => {
              return [];
@@ -62,7 +62,7 @@
          return curArr;
        }
      }
-     return action(config, 0, new ExArr());
+     return action(config, 0, new ExArr$1());
    }
 
    /**
@@ -72,13 +72,13 @@
     */
    function collapse(arr) {
      if (!arr) arr = this;
-     let res = new ExArr();
+     let res = new ExArr$1();
 
      function action(arr) {
        if (!arr) return;
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
-         if (ExArr.isArray(cur)) {
+         if (ExArr$1.isArray(cur)) {
            action(cur);
          } else {
            use("push", res, cur);
@@ -98,7 +98,7 @@
 
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
-         if (ExArr.isArray(cur)) {
+         if (ExArr$1.isArray(cur)) {
             arr[i]=action(cur);
          } else {
             arr[i]=val;
@@ -122,7 +122,7 @@
 
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
-         if (ExArr.isArray(cur)) {
+         if (ExArr$1.isArray(cur)) {
            use("push", curArr, action(cur));
          } else {
            use("push", curArr, cur);
@@ -168,7 +168,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-12 20:42:17
+    * @LastEditTime: 2021-04-13 19:16:56
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\event.js
@@ -213,43 +213,72 @@
      "total",
      "add",
      "change",
-     "delete"
+     "delete",
    ];
    class Event {
      constructor() {
        this._callbacks = {};
+       this.ei = null;
      }
-     on(fn, cb) {
+     on(fn, cb, depthMode = false) {
        if (callTypes.indexOf(fn) == -1) {
          error(`Event:${fn} is illegal!`);
          return;
        }
        let fns = this._callbacks[fn];
        if (!fns) this._callbacks[fn] = [];
-       this._callbacks[fn].push(cb);
+       use("push", this._callbacks[fn], {
+         cb,
+         dm: depthMode,
+       });
+       //深度绑定
+       // if (depthMode == true) {
+       //   this.depthBind(fn, cb);
+       // }
      }
      emit(fn, params, r) {
        let fns = this._callbacks[fn];
        if (!fns) return;
 
        for (let i = 0; i < fns.length; i++) {
-         fns[i](params, r, this.ei);
+         fns[i].cb(params, r, this.ei);
        }
      }
      set(ei) {
        this.ei = ei;
      }
+     depthBind(fn) {
+       let FEvent = this;
+       let ei = this.ei;
+
+       function action() {
+         let cur = arr[i];
+         for (let i = 0; i < ei.length; i++) {
+           //在子数组上绑定父元素Emit
+           if (ExArr.isArray(cur)) {
+             let originFn = cur.__proto__[fn];
+             cur.__proto__[fn] = function (...params) {
+               let r = originFn.call(this, ...params);
+               FEvent.emit(fn, params, ei);
+               return r;
+             };
+           } else {
+             continue;
+           }
+         }
+       }
+       action();
+     }
    }
 
-
-   let EventStrategy=function(name,event){
-     console.log(name);
+   let EventStrategy = function (name, event) {
+     console.log('in EventStrategy:'+name);
    };
 
    /*
     * @Author: 某时橙
     * @Date: 2021-04-10 23:24:35
-    * @LastEditTime: 2021-04-12 20:58:25
+    * @LastEditTime: 2021-04-13 19:16:14
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\init.js
@@ -268,34 +297,35 @@
    }
 
    function EventInit() {
-
      let event = new Event();
      event.set(this);
-     this.on=event.on.bind(event);
-
-
-     for (const name of callTypes) {
-       //在原有事件上执行Event事件逻辑
-       wrap.call(this, name);
-     }
-     function wrap(name) {
-
-       let fn = this[name]; 
-       this.__proto__[name] = function(...params){
-         //this环境是Exarr的实例
-         let r=fn.call(this, ...params);
-         event.emit(name,params,r);
-         EventStrategy(name);
-         return r;
-       };
-     } 
+     this.on = event.on.bind(event);
+     this.event = event;
    }
 
-   class ExArr extends Array{
+   function wrapInit(em) {
+     for (const name of callTypes) {
+       wrap(name);
+     }
+     function wrap(name) {
+       let fn=em.prototype[name];
+
+       em.prototype[name] = function (...params) {
+         //this环境是Exarr的实例
+         let event=this.event;
+         let r = fn.call(this, ...params);
+         event.emit(name, params, r);
+         EventStrategy(name);
+         return r
+       };
+     }
+   }
+
+   class ExArr$1 extends Array{
      constructor(...config) {
        super(config.length == 1 ? config[0] : 0);
        if (config.length > 1) {
-         return ExArr.createArr(...config);
+         return ExArr$1.createArr(...config);
        }
        this.setVal(0);
        EventInit.call(this);
@@ -310,16 +340,21 @@
      static originVal=0
    }
 
-   globalApiMixin(ExArr);
-   localApiMixin(ExArr);
+   globalApiMixin(ExArr$1);
+   localApiMixin(ExArr$1);
+   wrapInit(ExArr$1);
 
-   let a = new ExArr(3);
+
+   let a = new ExArr$1(1,2);
 
    a.on('push',function(params,r,array){
      //check bug1:array cant analysis by `${array}`
      console.log('在push方法上添加事件');
      console.log(`event:push params:${params} return:${r} `);
-   }); 
+   },false); 
+
+   a.push(1);
+   a[0].push(1);
    console.log(a.show());
    // a.on('collapse',function(params,r,array){
    //   //check bug1:array cant analysis by `${array}`
@@ -332,7 +367,7 @@
    // console.log(a.show());
    // console.log(a.total());
 
-   exports.ExArr = ExArr;
+   exports.ExArr = ExArr$1;
 
    Object.defineProperty(exports, '__esModule', { value: true });
 

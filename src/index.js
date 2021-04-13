@@ -1,5 +1,5 @@
 import { Methods } from "./Methods";
-import { globalApiMixin, localApiMixin,EventInit} from "./init";
+import { globalApiMixin, localApiMixin,EventInit,wrapInit} from "./init";
 
 
 export class ExArr extends Array{
@@ -23,14 +23,19 @@ export class ExArr extends Array{
 
 globalApiMixin(ExArr);
 localApiMixin(ExArr);
+wrapInit(ExArr)
 
-let a = new ExArr(3);
+
+let a = new ExArr(1,2);
 
 a.on('push',function(params,r,array){
   //check bug1:array cant analysis by `${array}`
   console.log('在push方法上添加事件');
   console.log(`event:push params:${params} return:${r} `);
-}) 
+},false) 
+
+a.push(1);
+a[0].push(1);
 console.log(a.show());
 // a.on('collapse',function(params,r,array){
 //   //check bug1:array cant analysis by `${array}`

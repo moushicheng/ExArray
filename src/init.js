@@ -1,14 +1,14 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-10 23:24:35
- * @LastEditTime: 2021-04-12 20:58:25
+ * @LastEditTime: 2021-04-13 19:16:14
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\init.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import { Methods } from "./Methods";
-import { callTypes, Event,EventStrategy} from "./event";
+import { callTypes, Event, EventStrategy } from "./event";
 
 export function globalApiMixin(em) {
   for (const [name, Func] of Object.entries(Methods.globalApi)) {
@@ -22,26 +22,26 @@ export function localApiMixin(em) {
 }
 
 export function EventInit() {
-
   let event = new Event();
   event.set(this);
-  this.on=event.on.bind(event)
+  this.on = event.on.bind(event);
+  this.event = event;
+}
 
-
+export function wrapInit(em) {
   for (const name of callTypes) {
-    //在原有事件上执行Event事件逻辑
-    wrap.call(this, name);
+    wrap(name)
   }
   function wrap(name) {
+    let fn=em.prototype[name];
 
-    let fn = this[name]; 
-    this.__proto__[name] = function(...params){
+    em.prototype[name] = function (...params) {
       //this环境是Exarr的实例
-      let r=fn.call(this, ...params);
-      event.emit(name,params,r);
-      EventStrategy(name,event);
-      return r;
-    }
-  } 
+      let event=this.event;
+      let r = fn.call(this, ...params);
+      event.emit(name, params, r);
+      EventStrategy(name, event);
+      return r
+    };
+  }
 }
-                  
