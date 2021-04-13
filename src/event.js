@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 09:26:54
- * @LastEditTime: 2021-04-13 19:16:56
+ * @LastEditTime: 2021-04-13 19:55:35
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\event.js
@@ -68,17 +68,17 @@ export class Event {
       cb,
       dm: depthMode,
     });
-    //深度绑定
-    // if (depthMode == true) {
-    //   this.depthBind(fn, cb);
-    // }
+    // 深度绑定
+    if (depthMode == true) {
+      this.depthBind(fn);
+    }
   }
-  emit(fn, params, r) {
+  emit(fn, params, r,curArr) {
     let fns = this._callbacks[fn];
     if (!fns) return;
-
+    if(!curArr)curArr=this.ei
     for (let i = 0; i < fns.length; i++) {
-      fns[i].cb(params, r, this.ei);
+      fns[i].cb(params, r, curArr);
     }
   }
   set(ei) {
@@ -88,26 +88,25 @@ export class Event {
     let FEvent = this;
     let ei = this.ei;
 
-    function action() {
-      let cur = arr[i];
+    function action(arr) {
+  
       for (let i = 0; i < ei.length; i++) {
+        let cur = arr[i];
         //在子数组上绑定父元素Emit
-        if (ExArr.isArray(cur)) {
-          let originFn = cur.__proto__[fn];
-          cur.__proto__[fn] = function (...params) {
-            let r = originFn.call(this, ...params);
-            FEvent.emit(fn, params, ei);
-            return r;
-          };
+        if (Array.isArray(cur)) {
+          cur.event.on(fn,function(params,r,array){
+            FEvent.emit(fn,params,r,cur)
+          })
+          action(cur);
         } else {
           continue;
         }
       }
     }
-    action();
+    action(ei);
   }
 }
 
 export let EventStrategy = function (name, event) {
-  console.log('in EventStrategy:'+name);
+  // console.log('in EventStrategy:'+name);
 };

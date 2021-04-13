@@ -26,15 +26,16 @@ localApiMixin(ExArr);
 wrapInit(ExArr)
 
 
-let a = new ExArr(1,2);
+let a = new ExArr(3,3);
 
 a.on('push',function(params,r,array){
   //check bug1:array cant analysis by `${array}`
   console.log('在push方法上添加事件');
   console.log(`event:push params:${params} return:${r} `);
-},false) 
+  console.log('当前数组'+array);
+},true) 
 
-a.push(1);
+
 a[0].push(1);
 console.log(a.show());
 // a.on('collapse',function(params,r,array){

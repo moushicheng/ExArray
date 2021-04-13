@@ -43,7 +43,7 @@
      let _c =
        config.length > 1
          ? () => {
-             return new ExArr$1();
+             return new ExArr();
            }
          : () => {
              return [];
@@ -62,7 +62,7 @@
          return curArr;
        }
      }
-     return action(config, 0, new ExArr$1());
+     return action(config, 0, new ExArr());
    }
 
    /**
@@ -72,13 +72,13 @@
     */
    function collapse(arr) {
      if (!arr) arr = this;
-     let res = new ExArr$1();
+     let res = new ExArr();
 
      function action(arr) {
        if (!arr) return;
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
-         if (ExArr$1.isArray(cur)) {
+         if (ExArr.isArray(cur)) {
            action(cur);
          } else {
            use("push", res, cur);
@@ -98,7 +98,7 @@
 
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
-         if (ExArr$1.isArray(cur)) {
+         if (ExArr.isArray(cur)) {
             arr[i]=action(cur);
          } else {
             arr[i]=val;
@@ -122,7 +122,7 @@
 
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
-         if (ExArr$1.isArray(cur)) {
+         if (ExArr.isArray(cur)) {
            use("push", curArr, action(cur));
          } else {
            use("push", curArr, cur);
@@ -168,7 +168,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-13 19:16:56
+    * @LastEditTime: 2021-04-13 19:55:35
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\event.js
@@ -231,17 +231,17 @@
          cb,
          dm: depthMode,
        });
-       //深度绑定
-       // if (depthMode == true) {
-       //   this.depthBind(fn, cb);
-       // }
+       // 深度绑定
+       if (depthMode == true) {
+         this.depthBind(fn);
+       }
      }
-     emit(fn, params, r) {
+     emit(fn, params, r,curArr) {
        let fns = this._callbacks[fn];
        if (!fns) return;
-
+       if(!curArr)curArr=this.ei;
        for (let i = 0; i < fns.length; i++) {
-         fns[i].cb(params, r, this.ei);
+         fns[i].cb(params, r, curArr);
        }
      }
      set(ei) {
@@ -251,29 +251,24 @@
        let FEvent = this;
        let ei = this.ei;
 
-       function action() {
-         let cur = arr[i];
+       function action(arr) {
+     
          for (let i = 0; i < ei.length; i++) {
+           let cur = arr[i];
            //在子数组上绑定父元素Emit
-           if (ExArr.isArray(cur)) {
-             let originFn = cur.__proto__[fn];
-             cur.__proto__[fn] = function (...params) {
-               let r = originFn.call(this, ...params);
-               FEvent.emit(fn, params, ei);
-               return r;
-             };
+           if (Array.isArray(cur)) {
+             cur.event.on(fn,function(params,r,array){
+               FEvent.emit(fn,params,r,cur);
+             });
+             action(cur);
            } else {
              continue;
            }
          }
        }
-       action();
+       action(ei);
      }
    }
-
-   let EventStrategy = function (name, event) {
-     console.log('in EventStrategy:'+name);
-   };
 
    /*
     * @Author: 某时橙
@@ -315,17 +310,16 @@
          let event=this.event;
          let r = fn.call(this, ...params);
          event.emit(name, params, r);
-         EventStrategy(name);
          return r
        };
      }
    }
 
-   class ExArr$1 extends Array{
+   class ExArr extends Array{
      constructor(...config) {
        super(config.length == 1 ? config[0] : 0);
        if (config.length > 1) {
-         return ExArr$1.createArr(...config);
+         return ExArr.createArr(...config);
        }
        this.setVal(0);
        EventInit.call(this);
@@ -340,20 +334,21 @@
      static originVal=0
    }
 
-   globalApiMixin(ExArr$1);
-   localApiMixin(ExArr$1);
-   wrapInit(ExArr$1);
+   globalApiMixin(ExArr);
+   localApiMixin(ExArr);
+   wrapInit(ExArr);
 
 
-   let a = new ExArr$1(1,2);
+   let a = new ExArr(3,3);
 
    a.on('push',function(params,r,array){
      //check bug1:array cant analysis by `${array}`
      console.log('在push方法上添加事件');
      console.log(`event:push params:${params} return:${r} `);
-   },false); 
+     console.log('当前数组'+array);
+   },true); 
 
-   a.push(1);
+
    a[0].push(1);
    console.log(a.show());
    // a.on('collapse',function(params,r,array){
@@ -367,7 +362,7 @@
    // console.log(a.show());
    // console.log(a.total());
 
-   exports.ExArr = ExArr$1;
+   exports.ExArr = ExArr;
 
    Object.defineProperty(exports, '__esModule', { value: true });
 
