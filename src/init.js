@@ -1,14 +1,14 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-10 23:24:35
- * @LastEditTime: 2021-04-13 19:16:14
+ * @LastEditTime: 2021-04-14 18:38:29
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\init.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
-import { Methods } from "./Methods";
-import { callTypes, Event, EventStrategy } from "./event";
+import  Methods  from "./Methods/index";
+import { callTypes, Event} from "./event";
 
 export function globalApiMixin(em) {
   for (const [name, Func] of Object.entries(Methods.globalApi)) {
@@ -36,11 +36,17 @@ export function wrapInit(em) {
     let fn=em.prototype[name];
 
     em.prototype[name] = function (...params) {
-      //this环境是Exarr的实例
+      //this环境是Exarr的实例 也是子元素的父数组
       let event=this.event;
-      let r = fn.call(this, ...params);
-      event.emit(name, params, r);
-      EventStrategy(name, event);
+      this.isMethod=true;
+
+      let r = fn.call(this, ...params); //执行函数
+                            
+      event.emit(name, params, r); //触发事件
+
+      Methods.MethodStrategy.call(this,name,params, r); //执行函数的后续逻辑
+
+      this.isMethod=false
       return r
     };
   }

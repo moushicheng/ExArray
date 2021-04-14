@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 09:26:54
- * @LastEditTime: 2021-04-13 19:55:35
+ * @LastEditTime: 2021-04-14 15:58:48
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\event.js
@@ -44,6 +44,8 @@ export let callTypes = [
   "toString",
   "unshift",
   "values",
+  "isArray",
+  "from",
   "collapse",
   "setOriVal",
   "show",
@@ -51,6 +53,7 @@ export let callTypes = [
   "add",
   "change",
   "delete",
+
 ];
 export class Event {
   constructor() {
@@ -89,7 +92,6 @@ export class Event {
     let ei = this.ei;
 
     function action(arr) {
-  
       for (let i = 0; i < ei.length; i++) {
         let cur = arr[i];
         //在子数组上绑定父元素Emit
@@ -107,6 +109,3 @@ export class Event {
   }
 }
 
-export let EventStrategy = function (name, event) {
-  // console.log('in EventStrategy:'+name);
-};
