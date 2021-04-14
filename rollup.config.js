@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-10 16:02:53
- * @LastEditTime: 2021-04-12 13:50:05
+ * @LastEditTime: 2021-04-14 21:55:00
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\rollup.config.js
@@ -28,5 +28,6 @@ export default {
     //   exclude: 'node_modules/**' 
     // }),
   ],
+  sourceMap:true
 };
    

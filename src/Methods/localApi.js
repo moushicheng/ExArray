@@ -1,13 +1,15 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:19
- * @LastEditTime: 2021-04-14 18:42:57
+ * @LastEditTime: 2021-04-14 22:50:28
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\Methods\localApi.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
-import { Exarr, ExArray } from "../index";
+import Exarr from "../index";
+import  ExArray from '../instance' 
+
 import { use } from "../utils/index";
 
 /**
@@ -26,7 +28,8 @@ function collapse(arr) {
       if (ExArray.isArray(cur)) {
         action(cur);
       } else {
-        use("push", res, cur);
+        use('push',res,cur)
+        // res.push(cur)
       }
     }
   }
@@ -64,8 +67,10 @@ function show(arr) {
     for (let i = 0; i < arr.length; i++) {
       let cur = arr[i];
       if (ExArray.isArray(cur)) {
-        use("push", curArr, action(cur));
+        // curArr.push(action(cur))
+        use("push", curArr,action(cur));
       } else {
+        // curArr.push(cur)
         use("push", curArr, cur);
       }
     }
@@ -83,11 +88,14 @@ function total(arr) {
   });
 }
 
-
+function setFN(arr) {
+  this.FN = arr;
+}
 
 export default {
   collapse,
   setVal,
   show,
   total,
+  setFN,
 };

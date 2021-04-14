@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 21:08:29
- * @LastEditTime: 2021-04-12 16:18:08
+ * @LastEditTime: 2021-04-14 19:00:40
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\utils\index.js
@@ -14,4 +14,4 @@ export function error(m){
 
 export function use(fn,arr,...params){
    return Array.prototype[fn].call(arr,...params)
-}
+} 

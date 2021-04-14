@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-10 23:24:35
- * @LastEditTime: 2021-04-14 18:38:29
+ * @LastEditTime: 2021-04-14 22:49:14
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\init.js
@@ -10,7 +10,7 @@
 import  Methods  from "./Methods/index";
 import { callTypes, Event} from "./event";
 
-export function globalApiMixin(em) {
+export function globalApiMixin(em) { 
   for (const [name, Func] of Object.entries(Methods.globalApi)) {
     em[name] = Func; //静态方法 Exarr.func
   }
@@ -38,7 +38,7 @@ export function wrapInit(em) {
     em.prototype[name] = function (...params) {
       //this环境是Exarr的实例 也是子元素的父数组
       let event=this.event;
-      this.isMethod=true;
+      this.isNotMethod=false;
 
       let r = fn.call(this, ...params); //执行函数
                             
@@ -46,7 +46,7 @@ export function wrapInit(em) {
 
       Methods.MethodStrategy.call(this,name,params, r); //执行函数的后续逻辑
 
-      this.isMethod=false
+      this.isNotMethod=true;
       return r
     };
   }

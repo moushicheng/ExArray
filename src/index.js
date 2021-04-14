@@ -1,60 +1,53 @@
-import  Methods  from "./Methods/index";
-import { globalApiMixin, localApiMixin, EventInit, wrapInit } from "./init";
+import  ExArray from './instance' 
 
-export class ExArray extends Array {
-  constructor(...config) {
-    super(config.length == 1 ? config[0] : 0);
-    if (config.length > 1) {
-      return ExArray.createArr(...config);
-    }
-    this.setVal(0);
-    EventInit.call(this);
-  }
-  static install() {
-    let m = {};
-    Object.assign(m, Methods.globalApi, Methods.localApi);
-    for (const [name, Func] of Object.entries(m)) {
-      Array["$" + name] = Func;
-    }
-  }
-  static originVal = 0;
-}
-
-globalApiMixin(ExArray);
-localApiMixin(ExArray);
-wrapInit(ExArray);
-
-export function Exarr(...config) {
+export default function Exarr(...config) {
   return new Proxy(new ExArray(...config), {
     get(obj, property) {
       // console.log('get : '+property);
       return obj[property];
     },
     set(obj, property, value) {
-      let r =obj[property] = value;
-      //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod，再执行的方法
-      if (!obj.isMethod && property != "isMethod") {
-        //add
-        obj.event.emit("add", property, r, obj);
+      //再怎么说，SET这玩意检测的范围也太广了...........
+       obj[property] = value;
+      //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
+      if (obj.isNotMethod && Number.isInteger(property*1)) {
+        //add 
+        console.log('set');
+        console.log('obj'+obj);
+        obj.event.emit("add", property, value, obj);
       }
       return true;
     },
   });
 }
-
-let b = new Exarr(2);
+ 
+let b = new Exarr(2,2);
 b.on(
   "add",
   function (params, back, array) {
+    console.log('add');
     console.log("参数: " + params);
     console.log("返回: " + back);
-    console.log("触发add");
+    console.log('触发数组: ' +array);
   },
   true
 );
-console.log(b);
+b.on(
+  "push",
+  function (params, back, array) {
+    console.log('push');
+    console.log("参数: " + params);
+    console.log("返回: " + back);
+    console.log('触发数组: ' +array);
+  },
+  false
+);
+b[0].push(1)
+
+// console.log(b);
+
 // console.log(b.collapse().show());
-// console.log(b.show());
+console.log(b.show());
 
 // b.on('push',function(params,r,array){
 //   //check bug1:array cant analysis by `${array}`

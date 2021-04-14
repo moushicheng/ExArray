@@ -1,13 +1,13 @@
 (function (global, factory) {
-   typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports) :
-   typeof define === 'function' && define.amd ? define(['exports'], factory) :
-   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.ExArr = {}));
-}(this, (function (exports) { 'use strict';
+   typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory() :
+   typeof define === 'function' && define.amd ? define(factory) :
+   (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.ExArr = factory());
+}(this, (function () { 'use strict';
 
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 21:08:29
-    * @LastEditTime: 2021-04-12 16:18:08
+    * @LastEditTime: 2021-04-14 19:00:40
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\utils\index.js
@@ -25,7 +25,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:26
-    * @LastEditTime: 2021-04-14 18:33:26
+    * @LastEditTime: 2021-04-14 22:48:22
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\globalApi.js
@@ -38,18 +38,21 @@
        let curIndex = config[i];
 
        for (let k = 0; k < curIndex; k++) {
-         let arr = new ExArray();
+         let arr ;
          if (i == config.length - 1) arr = 0;
+         else {
+           arr=new Exarr();
+           arr.setFN(curArr); 
+         }
          // curArr.push(arr);
          use("push", curArr, arr);
-
          action(config, i + 1, arr);
        }
        if (i == 0) {
          return curArr;
        }
      }
-     return action(config, 0, new Exarr());
+     return action(config, 0, new ExArray());
    }
 
    var globalApi = { createArr };
@@ -57,7 +60,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:19
-    * @LastEditTime: 2021-04-14 18:42:57
+    * @LastEditTime: 2021-04-14 22:50:28
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\localApi.js
@@ -80,7 +83,8 @@
          if (ExArray.isArray(cur)) {
            action(cur);
          } else {
-           use("push", res, cur);
+           use('push',res,cur);
+           // res.push(cur)
          }
        }
      }
@@ -118,8 +122,10 @@
        for (let i = 0; i < arr.length; i++) {
          let cur = arr[i];
          if (ExArray.isArray(cur)) {
-           use("push", curArr, action(cur));
+           // curArr.push(action(cur))
+           use("push", curArr,action(cur));
          } else {
+           // curArr.push(cur)
            use("push", curArr, cur);
          }
        }
@@ -137,19 +143,22 @@
      });
    }
 
-
+   function setFN(arr) {
+     this.FN = arr;
+   }
 
    var localApi = {
      collapse,
      setVal,
      show,
      total,
+     setFN,
    };
 
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:59
-    * @LastEditTime: 2021-04-14 18:33:38
+    * @LastEditTime: 2021-04-14 21:47:52
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\MethodStrategy.js
@@ -160,14 +169,44 @@
      let ei = this;
      switch (name) {
        case "push": {
-         Add();
+         if (params.length != 0) {
+           Add();
+         }
        }
      }
      function Add() {
        ei.event.emit("add", params, r, ei);
+       depth(params, ei);
+     }
+   }
+
+   function depth(params, ei, fn) {
+     function action(params, ei) {
        for (let p of params) {
+         if (Array.isArray(p)) {
+           action(p, p); //向下挖掘
+           p.setFN(ei);
+           _depth(p, ei); //向上查询并绑定
+         } else {
+           continue;
+         }
        }
      }
+     function _depth(cur, ei) {
+       if(!ei)return;
+       let FEvent = ei.event;
+       for (let [name, cbs] of Object.entries(ei.event._callbacks)) {
+         for (let cb of cbs) {
+           if (cb.dm) {
+             cur.event.on(name, function (params, r, array) {
+               FEvent.emit(name, params, r, cur);
+             });
+           }
+         }
+       }
+       _depth(cur,ei.FN);
+     }
+     action(params, ei);
    }
 
    /*
@@ -295,14 +334,14 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-10 23:24:35
-    * @LastEditTime: 2021-04-14 18:38:29
+    * @LastEditTime: 2021-04-14 22:49:14
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\init.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
-   function globalApiMixin(em) {
+   function globalApiMixin(em) { 
      for (const [name, Func] of Object.entries(Methods.globalApi)) {
        em[name] = Func; //静态方法 Exarr.func
      }
@@ -330,7 +369,7 @@
        em.prototype[name] = function (...params) {
          //this环境是Exarr的实例 也是子元素的父数组
          let event=this.event;
-         this.isMethod=true;
+         this.isNotMethod=false;
 
          let r = fn.call(this, ...params); //执行函数
                                
@@ -338,11 +377,21 @@
 
          Methods.MethodStrategy.call(this,name,params, r); //执行函数的后续逻辑
 
-         this.isMethod=false;
+         this.isNotMethod=true;
          return r
        };
      }
    }
+
+   /*
+    * @Author: 某时橙
+    * @Date: 2021-04-14 19:16:30
+    * @LastEditTime: 2021-04-14 19:17:04
+    * @LastEditors: your name
+    * @Description: 请添加介绍
+    * @FilePath: \arrExtend\src\instance.js
+    * 可以输入预定的版权声明、个性签名、空行等
+    */
 
    class ExArray extends Array {
      constructor(...config) {
@@ -374,30 +423,47 @@
          return obj[property];
        },
        set(obj, property, value) {
-         let r =obj[property] = value;
-         //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod，再执行的方法
-         if (!obj.isMethod && property != "isMethod") {
-           //add
-           obj.event.emit("add", property, r, obj);
+         //再怎么说，SET这玩意检测的范围也太广了...........
+          obj[property] = value;
+         //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
+         if (obj.isNotMethod && Number.isInteger(property*1)) {
+           //add 
+           console.log('set');
+           console.log('obj'+obj);
+           obj.event.emit("add", property, value, obj);
          }
          return true;
        },
      });
    }
-
-   let b = new Exarr(2);
+    
+   let b = new Exarr(2,2);
    b.on(
      "add",
      function (params, back, array) {
+       console.log('add');
        console.log("参数: " + params);
        console.log("返回: " + back);
-       console.log("触发add");
+       console.log('触发数组: ' +array);
      },
      true
    );
-   console.log(b);
+   b.on(
+     "push",
+     function (params, back, array) {
+       console.log('push');
+       console.log("参数: " + params);
+       console.log("返回: " + back);
+       console.log('触发数组: ' +array);
+     },
+     false
+   );
+   b[0].push(1);
+
+   // console.log(b);
+
    // console.log(b.collapse().show());
-   // console.log(b.show());
+   console.log(b.show());
 
    // b.on('push',function(params,r,array){
    //   //check bug1:array cant analysis by `${array}`
@@ -422,9 +488,6 @@
    // console.log(a.show());
    // console.log(a.total());
 
-   exports.ExArray = ExArray;
-   exports.Exarr = Exarr;
-
-   Object.defineProperty(exports, '__esModule', { value: true });
+   return Exarr;
 
 })));
