@@ -1,6 +1,6 @@
 # ExArray
 A more powerful array base on the original array
-
+It's still under development,There may be plenty of bugs.
 # install
 
 npm install
