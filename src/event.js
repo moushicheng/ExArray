@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 09:26:54
- * @LastEditTime: 2021-04-14 15:58:48
+ * @LastEditTime: 2021-04-15 09:47:34
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\event.js
@@ -67,7 +67,7 @@ export class Event {
     }
     let fns = this._callbacks[fn];
     if (!fns) this._callbacks[fn] = [];
-    use("push", this._callbacks[fn], {
+    use.call(this.ei,"push", this._callbacks[fn], {
       cb,
       dm: depthMode,
     });

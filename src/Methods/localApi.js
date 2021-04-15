@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:19
- * @LastEditTime: 2021-04-14 22:50:28
+ * @LastEditTime: 2021-04-15 09:53:39
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\Methods\localApi.js
@@ -17,8 +17,8 @@ import { use } from "../utils/index";
  * @param1 { Exarr instance like [[1,2,3],[1,2,3]]}
  * @return { Exarr instance like [1,2,3,1,2,3]}
  */
-function collapse(arr) {
-  if (!arr) arr = this;
+function collapse(array) {
+  if (!array) array = this;
   let res = new Exarr();
 
   function action(arr) {
@@ -28,17 +28,17 @@ function collapse(arr) {
       if (ExArray.isArray(cur)) {
         action(cur);
       } else {
-        use('push',res,cur)
+        use.call(array,'push',res,cur)
         // res.push(cur)
       }
     }
   }
-  action(arr);
+  action(array);
   return res;
 }
 
-function setVal(val, arr) {
-  if (!arr) arr = this;
+function setVal(val, array) { //array->Exarr instance
+  if (!array) array = this;
 
   function action(arr) {
     if (!arr) return val;
@@ -53,12 +53,11 @@ function setVal(val, arr) {
     }
     return arr;
   }
-  return action(arr);
+  return action(array);
 }
 
-function show(arr) {
-  if (!arr) arr = this;
-
+function show(array) {
+  if (!array) array = this;
   function action(arr) {
     if (!arr) return;
 
@@ -68,21 +67,21 @@ function show(arr) {
       let cur = arr[i];
       if (ExArray.isArray(cur)) {
         // curArr.push(action(cur))
-        use("push", curArr,action(cur));
+        use.call(array,"push", curArr,action(cur));
       } else {
         // curArr.push(cur)
-        use("push", curArr, cur);
+        use.call(array,"push", curArr, cur);
       }
     }
 
     return curArr;
   }
-  return action(arr);
+  return action(array);
 }
 
-function total(arr) {
-  if (!arr) arr = this;
-  arr = collapse(arr);
+function total(array) {
+  if (!array) array = this;
+  array = collapse(arr);
   return arr.reduce((total, cur) => {
     return (total += cur);
   });
@@ -91,6 +90,9 @@ function total(arr) {
 function setFN(arr) {
   this.FN = arr;
 }
+function setM(s){
+ this.isNotMethod=s;
+}
 
 export default {
   collapse,
@@ -98,4 +100,5 @@ export default {
   show,
   total,
   setFN,
+  setM
 };

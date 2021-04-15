@@ -12,8 +12,6 @@ export default function Exarr(...config) {
       //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
       if (obj.isNotMethod && Number.isInteger(property*1)) {
         //add 
-        console.log('set');
-        console.log('obj'+obj);
         obj.event.emit("add", property, value, obj);
       }
       return true;
@@ -35,19 +33,19 @@ b.on(
 b.on(
   "push",
   function (params, back, array) {
-    console.log('push');
-    console.log("参数: " + params);
-    console.log("返回: " + back);
-    console.log('触发数组: ' +array);
+    console.log("params: " + params);
+    console.log("push returned value : " + back);
+    console.log('array : ' +array);
   },
   false
 );
-b[0].push(1)
+b[2]=233;
+console.log(b.show());
 
 // console.log(b);
 
 // console.log(b.collapse().show());
-console.log(b.show());
+// console.log(b.show());
 
 // b.on('push',function(params,r,array){
 //   //check bug1:array cant analysis by `${array}`

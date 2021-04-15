@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:26
- * @LastEditTime: 2021-04-14 22:48:22
+ * @LastEditTime: 2021-04-14 23:15:43
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\Methods\globalApi.js
@@ -23,8 +23,8 @@ function createArr(...config) {
         arr=new Exarr();
         arr.setFN(curArr); 
       }
-      // curArr.push(arr);
-      use("push", curArr, arr);
+      curArr.push(arr);
+      // use("push", curArr, arr);
       action(config, i + 1, arr);
     }
     if (i == 0) {

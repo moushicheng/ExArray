@@ -7,7 +7,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 21:08:29
-    * @LastEditTime: 2021-04-14 19:00:40
+    * @LastEditTime: 2021-04-15 09:52:21
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\utils\index.js
@@ -19,13 +19,16 @@
    }
 
    function use(fn,arr,...params){
-      return Array.prototype[fn].call(arr,...params)
+      this.setM(false); //一级拦截->拦截方法给下表索引getter带来的副作用
+      let r= Array.prototype[fn].call(arr,...params); //二级拦截->拦截this上的事件传递
+      this.setM(true);
+      return r;
    }
 
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:26
-    * @LastEditTime: 2021-04-14 22:48:22
+    * @LastEditTime: 2021-04-14 23:15:43
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\globalApi.js
@@ -44,8 +47,8 @@
            arr=new Exarr();
            arr.setFN(curArr); 
          }
-         // curArr.push(arr);
-         use("push", curArr, arr);
+         curArr.push(arr);
+         // use("push", curArr, arr);
          action(config, i + 1, arr);
        }
        if (i == 0) {
@@ -60,7 +63,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:19
-    * @LastEditTime: 2021-04-14 22:50:28
+    * @LastEditTime: 2021-04-15 09:53:39
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\localApi.js
@@ -72,8 +75,8 @@
     * @param1 { Exarr instance like [[1,2,3],[1,2,3]]}
     * @return { Exarr instance like [1,2,3,1,2,3]}
     */
-   function collapse(arr) {
-     if (!arr) arr = this;
+   function collapse(array) {
+     if (!array) array = this;
      let res = new Exarr();
 
      function action(arr) {
@@ -83,17 +86,17 @@
          if (ExArray.isArray(cur)) {
            action(cur);
          } else {
-           use('push',res,cur);
+           use.call(array,'push',res,cur);
            // res.push(cur)
          }
        }
      }
-     action(arr);
+     action(array);
      return res;
    }
 
-   function setVal(val, arr) {
-     if (!arr) arr = this;
+   function setVal(val, array) { //array->Exarr instance
+     if (!array) array = this;
 
      function action(arr) {
        if (!arr) return val;
@@ -108,12 +111,11 @@
        }
        return arr;
      }
-     return action(arr);
+     return action(array);
    }
 
-   function show(arr) {
-     if (!arr) arr = this;
-
+   function show(array) {
+     if (!array) array = this;
      function action(arr) {
        if (!arr) return;
 
@@ -123,21 +125,20 @@
          let cur = arr[i];
          if (ExArray.isArray(cur)) {
            // curArr.push(action(cur))
-           use("push", curArr,action(cur));
+           use.call(array,"push", curArr,action(cur));
          } else {
            // curArr.push(cur)
-           use("push", curArr, cur);
+           use.call(array,"push", curArr, cur);
          }
        }
 
        return curArr;
      }
-     return action(arr);
+     return action(array);
    }
 
-   function total(arr) {
-     if (!arr) arr = this;
-     arr = collapse(arr);
+   function total(array) {
+     collapse(arr);
      return arr.reduce((total, cur) => {
        return (total += cur);
      });
@@ -146,6 +147,9 @@
    function setFN(arr) {
      this.FN = arr;
    }
+   function setM(s){
+    this.isNotMethod=s;
+   }
 
    var localApi = {
      collapse,
@@ -153,6 +157,7 @@
      show,
      total,
      setFN,
+     setM
    };
 
    /*
@@ -227,7 +232,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-14 15:58:48
+    * @LastEditTime: 2021-04-15 09:47:34
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\event.js
@@ -289,7 +294,7 @@
        }
        let fns = this._callbacks[fn];
        if (!fns) this._callbacks[fn] = [];
-       use("push", this._callbacks[fn], {
+       use.call(this.ei,"push", this._callbacks[fn], {
          cb,
          dm: depthMode,
        });
@@ -334,7 +339,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-10 23:24:35
-    * @LastEditTime: 2021-04-14 22:49:14
+    * @LastEditTime: 2021-04-15 09:40:01
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\init.js
@@ -386,7 +391,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 19:16:30
-    * @LastEditTime: 2021-04-14 19:17:04
+    * @LastEditTime: 2021-04-14 23:15:51
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\instance.js
@@ -399,8 +404,10 @@
        if (config.length > 1) {
          return ExArray.createArr(...config);
        }
+       this.isNotMethod=true;
        this.setVal(0);
        EventInit.call(this);
+
      }
      static install() {
        let m = {};
@@ -428,8 +435,6 @@
          //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
          if (obj.isNotMethod && Number.isInteger(property*1)) {
            //add 
-           console.log('set');
-           console.log('obj'+obj);
            obj.event.emit("add", property, value, obj);
          }
          return true;
@@ -451,19 +456,19 @@
    b.on(
      "push",
      function (params, back, array) {
-       console.log('push');
-       console.log("参数: " + params);
-       console.log("返回: " + back);
-       console.log('触发数组: ' +array);
+       console.log("params: " + params);
+       console.log("push returned value : " + back);
+       console.log('array : ' +array);
      },
      false
    );
-   b[0].push(1);
+   b[2]=233;
+   console.log(b.show());
 
    // console.log(b);
 
    // console.log(b.collapse().show());
-   console.log(b.show());
+   // console.log(b.show());
 
    // b.on('push',function(params,r,array){
    //   //check bug1:array cant analysis by `${array}`
