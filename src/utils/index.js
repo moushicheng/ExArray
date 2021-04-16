@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 21:08:29
- * @LastEditTime: 2021-04-15 09:52:21
+ * @LastEditTime: 2021-04-16 13:29:06
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\utils\index.js
@@ -12,9 +12,17 @@ export function error(m){
     throw Error(m)
 }
 
+//use方法不会触发方法事件和add/change/delete特殊事件
 export function use(fn,arr,...params){
    this.setM(false); //一级拦截->拦截方法给下表索引getter带来的副作用
    let r= Array.prototype[fn].call(arr,...params) //二级拦截->拦截this上的事件传递
    this.setM(true);
    return r;
 } 
+
+export function addEle(i,ele){
+   use.call(this,'splice',this,i,i,ele); 
+}
+export function changeEle(i,ele){
+   use.call(this,'splice',this,i,1,ele); 
+}

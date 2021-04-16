@@ -7,7 +7,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 21:08:29
-    * @LastEditTime: 2021-04-15 09:52:21
+    * @LastEditTime: 2021-04-16 13:29:06
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\utils\index.js
@@ -18,11 +18,15 @@
        throw Error(m)
    }
 
+   //use方法不会触发方法事件和add/change/delete特殊事件
    function use(fn,arr,...params){
       this.setM(false); //一级拦截->拦截方法给下表索引getter带来的副作用
       let r= Array.prototype[fn].call(arr,...params); //二级拦截->拦截this上的事件传递
       this.setM(true);
       return r;
+   } 
+   function changeEle(i,ele){
+      use.call(this,'splice',this,i,1,ele); 
    }
 
    /*
@@ -63,7 +67,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:19
-    * @LastEditTime: 2021-04-15 09:53:39
+    * @LastEditTime: 2021-04-16 16:30:14
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\localApi.js
@@ -163,12 +167,13 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:59
-    * @LastEditTime: 2021-04-14 21:47:52
+    * @LastEditTime: 2021-04-16 16:31:04
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\Methods\MethodStrategy.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
+
 
    function MethodStrategy (name, params, r) {
      let ei = this;
@@ -178,11 +183,76 @@
            Add();
          }
        }
+       case "pop":{
+         Delete();
+       }
+       case "shift":{
+         Delete();
+       }
+       case "unshift":{
+         if (params.length != 0) {
+           Add();
+         }
+       }
+       case "copyWithin":{
+         Add();
+       }
+       case "reverse":{
+         Change(); 
+       }
+       case "sort":{
+         Change();
+       }
+       case "fill":{
+         Change();
+       }
      }
+
+
+
      function Add() {
        ei.event.emit("add", params, r, ei);
+       params=transform(params);
+       changeEle.call(ei,ei.length-1,params[0]);
        depth(params, ei);
      }
+     function Change() {
+       ei.event.emit("change", params, r);
+     }
+     function Delete() {
+       ei.event.emit("delete", params, r);
+     }
+   }
+
+   function transform(params,ei) {
+     for (let i = 0; i < params.length; i++) {
+       let cur = params[i];
+       if (!Array.isArray(cur)||cur.on)continue;
+       
+       //如果是数组
+       if(isMoreLayer(cur)){
+         let r=new Exarr();
+         // use.call(r,'push',...transform(cur))
+         r.push(...transform(cur));
+         params[i]=transform(r);
+       }else {
+         let r=new Exarr();
+         r.push(...cur);
+         params[i]=r;
+       }
+     }
+     return params;
+   }
+   function isMoreLayer(arr) {
+     for (let i = 0; i < arr.length; i++) {
+       let cur = arr[i];
+       if (Array.isArray(cur)) {
+         return true;
+       } else {
+         continue;
+       }
+     }
+     return false;
    }
 
    function depth(params, ei, fn) {
@@ -198,7 +268,7 @@
        }
      }
      function _depth(cur, ei) {
-       if(!ei)return;
+       if (!ei) return;
        let FEvent = ei.event;
        for (let [name, cbs] of Object.entries(ei.event._callbacks)) {
          for (let cb of cbs) {
@@ -209,7 +279,7 @@
            }
          }
        }
-       _depth(cur,ei.FN);
+       _depth(cur, ei.FN);
      }
      action(params, ei);
    }
@@ -391,7 +461,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 19:16:30
-    * @LastEditTime: 2021-04-14 23:15:51
+    * @LastEditTime: 2021-04-16 16:30:00
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \arrExtend\src\instance.js
@@ -405,44 +475,51 @@
          return ExArray.createArr(...config);
        }
        this.isNotMethod=true;
-       this.setVal(0);
+       this.__Ex__='ExArray';
        EventInit.call(this);
-
+       this.fill(0); //如果是一维数组直接fill即可  
+       this.setVal(1);
      }
-     static install() {
-       let m = {};
-       Object.assign(m, Methods.globalApi, Methods.localApi);
-       for (const [name, Func] of Object.entries(m)) {
-         Array["$" + name] = Func;
-       }
-     }
-     static originVal = 0;
+     // static install() {
+     //   let m = {}; 
+     //   Object.assign(m, Methods.globalApi, Methods.localApi);
+     //   for (const [name, Func] of Object.entries(m)) {
+     //     Array["$" + name] = Func;
+     //   }
+     // }
    }
 
    globalApiMixin(ExArray);
    localApiMixin(ExArray);
    wrapInit(ExArray);
 
-   function Exarr(...config) {
-     return new Proxy(new ExArray(...config), {
-       get(obj, property) {
-         // console.log('get : '+property);
-         return obj[property];
-       },
-       set(obj, property, value) {
-         //再怎么说，SET这玩意检测的范围也太广了...........
-          obj[property] = value;
-         //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
-         if (obj.isNotMethod && Number.isInteger(property*1)) {
-           //add 
-           obj.event.emit("add", property, value, obj);
-         }
-         return true;
-       },
-     });
+   //宗旨:不做对象检测
+   class Exarr extends ExArray{ //继承只是继承其静态方法罢了
+     constructor(...config){
+       super();
+       return new Proxy(new ExArray(...config), {
+         get(obj, property) {
+           // console.log('get : '+property);
+           return obj[property];
+         },
+         set(obj, property, value) {
+           //再怎么说，SET这玩意检测的范围也太广了...........
+            obj[property] = value;
+           //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
+           if (obj.isNotMethod && Number.isInteger(property*1)) {
+             //add 
+             if(property<obj.length-1)obj.event.emit("change", property, value, obj);
+             else {
+               obj.event.emit("add", property, value, obj);
+             }
+           }
+           return true;
+         },
+       });
+     }
    }
-    
-   let b = new Exarr(2,2);
+     
+   let b = new Exarr(3);
    b.on(
      "add",
      function (params, back, array) {
@@ -454,17 +531,28 @@
      true
    );
    b.on(
-     "push",
+     "change",
      function (params, back, array) {
-       console.log("params: " + params);
-       console.log("push returned value : " + back);
-       console.log('array : ' +array);
+       console.log('change');
+       console.log("参数: " + params);
+       console.log("返回: " + back);
+       console.log('触发数组: ' +array);
      },
-     false
+     true
    );
-   b[2]=233;
-   console.log(b.show());
 
+   // console.log(b);
+   // b.on(
+   //   "push",
+   //   function (params, back, array) {
+   //     console.log('push');
+   //     console.log("params: " + params);
+   //     console.log("push returned value : " + back);
+   //     console.log('array : ' +array);
+   //   },
+   //   false
+   // );
+   console.log(b.show());
    // console.log(b);
 
    // console.log(b.collapse().show());

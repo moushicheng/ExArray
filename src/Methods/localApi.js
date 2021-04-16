@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:19
- * @LastEditTime: 2021-04-15 09:53:39
+ * @LastEditTime: 2021-04-16 16:30:14
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \arrExtend\src\Methods\localApi.js
@@ -10,7 +10,7 @@
 import Exarr from "../index";
 import  ExArray from '../instance' 
 
-import { use } from "../utils/index";
+import { use, addEle } from "../utils/index";
 
 /**
  * @description: To make a multidimensional array one-dimensional
