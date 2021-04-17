@@ -1,6 +1,11 @@
+![ExArray](https://www.hualigs.cn/image/60797ff01871d.jpg)
+
 # ExArray
+
+👯✨😄📫
 A more powerful array base on the original array
 It's still under development,There may be plenty of bugs.
+
 # install
 
 npm install
@@ -92,11 +97,38 @@ a.push(1);
 
 - collapse
 
+  Flatten the Exarray
+
+  ``` javascript
+  new Exarr(2,2).collapse() //return: [0,0,0,0]
+  ```
+
+
 - setVal
+
+  Set an initial value for the Exarray
+
+  ```javascript
+  new Exarr(2,2).setVal(2) //return: [[2,2],[2,2]]
+  ```
 
 - show
 
+  print Exarray
+
+  ```javascript
+  console.log(new Exarr(2,2)) //return:  [[0,0],[0,0]]
+  ```
+
 - total
+
+  Calculates the total value of the array
+
+  ```javascript
+  new Exarr(2,2).setVal(2).total() //retrun: 4
+  ```
+
+  
 
   
 
