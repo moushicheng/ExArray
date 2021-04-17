@@ -1,16 +1,13 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 09:26:54
- * @LastEditTime: 2021-04-15 09:47:34
+ * @LastEditTime: 2021-04-17 19:02:38
  * @LastEditors: your name
  * @Description: 请添加介绍
- * @FilePath: \arrExtend\src\event.js
+ * @FilePath: \ExArray\src\event.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
-import {
-  error,
-  use
-} from "./utils/index";
+import { error, use } from "./utils/index";
 
 export let callTypes = [
   "concat",
@@ -53,7 +50,6 @@ export let callTypes = [
   "add",
   "change",
   "delete",
-
 ];
 export class Event {
   constructor() {
@@ -67,7 +63,7 @@ export class Event {
     }
     let fns = this._callbacks[fn];
     if (!fns) this._callbacks[fn] = [];
-    use.call(this.ei,"push", this._callbacks[fn], {
+    this._callbacks[fn].push({
       cb,
       dm: depthMode,
     });
@@ -76,10 +72,10 @@ export class Event {
       this.depthBind(fn);
     }
   }
-  emit(fn, params, r,curArr) {
+  emit(fn, params, r, curArr) {
     let fns = this._callbacks[fn];
     if (!fns) return;
-    if(!curArr)curArr=this.ei
+    if (!curArr) curArr = this.ei;
     for (let i = 0; i < fns.length; i++) {
       fns[i].cb(params, r, curArr);
     }
@@ -96,9 +92,9 @@ export class Event {
         let cur = arr[i];
         //在子数组上绑定父元素Emit
         if (Array.isArray(cur)) {
-          cur.event.on(fn,function(params,r,array){
-            FEvent.emit(fn,params,r,cur)
-          })
+          cur.event.on(fn, function (params, r, array) {
+            FEvent.emit(fn, params, r, cur);
+          });
           action(cur);
         } else {
           continue;
@@ -108,4 +104,3 @@ export class Event {
     action(ei);
   }
 }
-

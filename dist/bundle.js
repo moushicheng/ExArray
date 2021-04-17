@@ -24,18 +24,15 @@
       let r= Array.prototype[fn].call(arr,...params); //二级拦截->拦截this上的事件传递
       this.setM(true);
       return r;
-   } 
-   function changeEle(i,ele){
-      use.call(this,'splice',this,i,1,ele); 
    }
 
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:26
-    * @LastEditTime: 2021-04-14 23:15:43
+    * @LastEditTime: 2021-04-17 19:50:08
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\Methods\globalApi.js
+    * @FilePath: \ExArray\src\Methods\globalApi.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
@@ -45,11 +42,11 @@
        let curIndex = config[i];
 
        for (let k = 0; k < curIndex; k++) {
-         let arr ;
+         let arr;
          if (i == config.length - 1) arr = 0;
          else {
-           arr=new Exarr();
-           arr.setFN(curArr); 
+           arr = new Exarr();
+           arr.setFN(curArr);
          }
          curArr.push(arr);
          // use("push", curArr, arr);
@@ -62,7 +59,22 @@
      return action(config, 0, new ExArray());
    }
 
-   var globalApi = { createArr };
+   function transform$1(ele) {
+     if (!Array.isArray(ele) || ele.on) return ele;
+     //如果是数组
+     let r = new ExArray();
+     for (let i = 0; i < ele.length; i++) {
+       let cur = ele[i];
+       if (Array.isArray(cur)) {
+         use.call(r, "push", r, transform$1(cur));
+       } else {
+         use.call(r, "push", r, cur);
+       }
+     }
+     return r;
+   }
+
+   var globalApi = { createArr, transform: transform$1 };
 
    /*
     * @Author: 某时橙
@@ -167,13 +179,12 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:59
-    * @LastEditTime: 2021-04-16 16:31:04
+    * @LastEditTime: 2021-04-17 19:49:17
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\Methods\MethodStrategy.js
+    * @FilePath: \ExArray\src\Methods\MethodStrategy.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
-
 
    function MethodStrategy (name, params, r) {
      let ei = this;
@@ -182,38 +193,57 @@
          if (params.length != 0) {
            Add();
          }
+         break;
        }
-       case "pop":{
+       case "pop": {
          Delete();
+         break;
        }
-       case "shift":{
+       case "shift": {
          Delete();
+         break;
        }
-       case "unshift":{
+       case "unshift": {
          if (params.length != 0) {
            Add();
          }
+         break;
        }
-       case "copyWithin":{
-         Add();
+       case "copyWithin": {
+         //使用 copyWithin 从数组中复制一部分到同数组中的另外位置
+         if (params[0] != null) {
+           Add();
+         }
+         break;
        }
-       case "reverse":{
-         Change(); 
-       }
-       case "sort":{
+       case "reverse": {
          Change();
+         break;
        }
-       case "fill":{
+       case "sort": {
          Change();
+         break;
+       }
+       case "fill": {
+         Change();
+         break;
+       }
+       case "splice": {
+         //splice比较复杂，有增删改三种事件
+         //参数[0]删除起始下标，参数[1]为删除总数,参数[1+n]为添加元素
+         if (params[2]) {
+           Add();
+         }
+         if (params[1] >= 1) {
+           Delete();
+         }
        }
      }
 
-
-
      function Add() {
        ei.event.emit("add", params, r, ei);
-       params=transform(params);
-       changeEle.call(ei,ei.length-1,params[0]);
+       params = transform(params);
+       use.call(ei, "splice", ei, ei.length - params.length, ei.length, ...params);
        depth(params, ei);
      }
      function Change() {
@@ -224,35 +254,11 @@
      }
    }
 
-   function transform(params,ei) {
+   function transform(params) {
      for (let i = 0; i < params.length; i++) {
-       let cur = params[i];
-       if (!Array.isArray(cur)||cur.on)continue;
-       
-       //如果是数组
-       if(isMoreLayer(cur)){
-         let r=new Exarr();
-         // use.call(r,'push',...transform(cur))
-         r.push(...transform(cur));
-         params[i]=transform(r);
-       }else {
-         let r=new Exarr();
-         r.push(...cur);
-         params[i]=r;
-       }
+       params[i] = Exarr.transform(params[i]);
      }
      return params;
-   }
-   function isMoreLayer(arr) {
-     for (let i = 0; i < arr.length; i++) {
-       let cur = arr[i];
-       if (Array.isArray(cur)) {
-         return true;
-       } else {
-         continue;
-       }
-     }
-     return false;
    }
 
    function depth(params, ei, fn) {
@@ -302,10 +308,10 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-15 09:47:34
+    * @LastEditTime: 2021-04-17 19:02:38
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\event.js
+    * @FilePath: \ExArray\src\event.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
@@ -350,7 +356,6 @@
      "add",
      "change",
      "delete",
-
    ];
    class Event {
      constructor() {
@@ -364,7 +369,7 @@
        }
        let fns = this._callbacks[fn];
        if (!fns) this._callbacks[fn] = [];
-       use.call(this.ei,"push", this._callbacks[fn], {
+       this._callbacks[fn].push({
          cb,
          dm: depthMode,
        });
@@ -373,10 +378,10 @@
          this.depthBind(fn);
        }
      }
-     emit(fn, params, r,curArr) {
+     emit(fn, params, r, curArr) {
        let fns = this._callbacks[fn];
        if (!fns) return;
-       if(!curArr)curArr=this.ei;
+       if (!curArr) curArr = this.ei;
        for (let i = 0; i < fns.length; i++) {
          fns[i].cb(params, r, curArr);
        }
@@ -393,8 +398,8 @@
            let cur = arr[i];
            //在子数组上绑定父元素Emit
            if (Array.isArray(cur)) {
-             cur.event.on(fn,function(params,r,array){
-               FEvent.emit(fn,params,r,cur);
+             cur.event.on(fn, function (params, r, array) {
+               FEvent.emit(fn, params, r, cur);
              });
              action(cur);
            } else {
@@ -461,10 +466,10 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 19:16:30
-    * @LastEditTime: 2021-04-16 16:30:00
+    * @LastEditTime: 2021-04-17 19:08:39
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\instance.js
+    * @FilePath: \ExArray\src\instance.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
@@ -519,7 +524,8 @@
      }
    }
      
-   let b = new Exarr(3);
+
+   let b = new Exarr(4);
    b.on(
      "add",
      function (params, back, array) {
@@ -534,52 +540,23 @@
      "change",
      function (params, back, array) {
        console.log('change');
-       console.log("参数: " + params);
-       console.log("返回: " + back);
-       console.log('触发数组: ' +array);
+       // console.log("参数: " + params);
+       // console.log("返回: " + back);
+       // console.log('触发数组: ' +array);
      },
      true
    );
-
-   // console.log(b);
-   // b.on(
-   //   "push",
-   //   function (params, back, array) {
-   //     console.log('push');
-   //     console.log("params: " + params);
-   //     console.log("push returned value : " + back);
-   //     console.log('array : ' +array);
-   //   },
-   //   false
-   // );
+   b.on(
+     "delete",
+     function (params, back, array) {
+       console.log('delete');
+       console.log("参数: " + params);
+       console.log("返回: " + back);
+       console.log('触发数组: ' +array); 
+     },
+     true
+   );
    console.log(b.show());
-   // console.log(b);
-
-   // console.log(b.collapse().show());
-   // console.log(b.show());
-
-   // b.on('push',function(params,r,array){
-   //   //check bug1:array cant analysis by `${array}`
-   //   // console.log('在push方法上添加事件');
-   //   // console.log(`event:push params:${params} return:${r} `);
-   //   // console.log('当前数组'+array);
-   // },true)
-
-   // console.log(a.show());
-   // console.log(a);
-
-   // console.log(proxy.show());
-
-   // a.on('collapse',function(params,r,array){
-   //   //check bug1:array cant analysis by `${array}`
-   //   console.log('在collapse方法上添加事件');
-   //   console.log(`event:push params:${params} return:${r} `);
-   // })
-
-   // a.push(1)
-
-   // console.log(a.show());
-   // console.log(a.total());
 
    return Exarr;
 

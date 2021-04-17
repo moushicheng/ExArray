@@ -6,18 +6,24 @@
 A more powerful array base on the original array
 It's still under development,There may be plenty of bugs.
 
-# install
-
-npm install
-
-
-
 # feature
 
-- **Event** -- Provides an event subscription system
-- **add|change|delete event** --This type of event can even monitor 'a[index]=num' this form
-- **depth watch**  
-- **multidimensional arrays**  -  you can create it directly
+- **Event** 
+- **depth bind**  
+- **multidimensional arrays**  
+- **more practical api**
+
+# install
+
+1. npm install exarray
+
+then
+
+```
+let Exarr=require('exarray'); //Exarr can be any name
+```
+
+
 
 # use
 
@@ -38,62 +44,106 @@ npm install
 
 # event
 
-- You can bind callback to any function which is in instance a event,such as:
+- You can bind function event to Exarray instance
 
 ```javascript
-let a=new new Exarr(2,2);
+let a=new Exarr(2,2);
 a.on(
   "push",
   function (params, back, array) {;
     console.log("params: " + params);
     console.log("push returned value : " + back);
-    console.log('array : ' +array);
+    console.log("array : " +array);
   },
   false
 );
-
-
 ```
 
 when you 
 
 ```javascript
 a.push(1);
-//then,ExArray will excute your callback
+// then,ExArray will excute your callback
 // params: 1
 // push returned value : 3
 // array : [[0,0],[0,0],1]
 ```
 
-- In addition ,you can also bind 'add','delete','change' event
+- In addition ,you can also bind 'Add','Delete','Change' event to Exarray instance
 
   ```javascript
-  b.on(
+  a.on(
     "add",
     function (params, back, array) {
+      console.log("add")
       console.log("params: " + params);
-      console.log("push returned value : " + back);
-      console.log('array : ' +array);
+      console.log("returned value : " + back);
+      console.log("array : " +array);
     },
     false
-  );
+);
   ```
 
-  when you add a new element to array,your callback will execute,
+  when you add a new element to array,your will touch off callback which you bind to Add/Delete/Change,
 
   such as:
-
+  
   ```
-  b[2]=1;
+  a[2]=1;
+  // add
   // params: 2
-  // push returned value : 1
+  // returned value : 1
   // array : [[0,0],[0,0],1]
-  b.push(1);
+  a.push(1)
+  // add
+  // params: 1
+  // returned value : 5
+  // array: 1,1,1,1,1
   ```
 
+but if you do the following:
+
+```
+a[0][1]=1
+```
+
+it can't execute add callback,you must change third argument to true ,this allows for  **deep bind**
+
+For example:
+
+```
+a.on(
+  "add",
+  function (params, back, array) {
+    console.log("depth bind,add")
+  },
+  true
+);
+a[0][2]=1;
+//"depth bind,add"
+```
 
 
-# api
+
+
+
+# API
+
+## GlobalApi
+
+- transform
+
+  Array transform into Exarray instance
+
+  ```javascript
+  Exarr.transform([1,2])  //Exarr instance[1,2]
+  ```
+
+  
+
+
+
+## LocalApi:
 
 - collapse
 
@@ -127,11 +177,6 @@ a.push(1);
   ```javascript
   new Exarr(2,2).setVal(2).total() //retrun: 4
   ```
-
-  
-
-  
-
 
 
 

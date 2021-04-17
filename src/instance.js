@@ -1,10 +1,10 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 19:16:30
- * @LastEditTime: 2021-04-16 16:30:00
+ * @LastEditTime: 2021-04-17 19:08:39
  * @LastEditors: your name
  * @Description: 请添加介绍
- * @FilePath: \arrExtend\src\instance.js
+ * @FilePath: \ExArray\src\instance.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import { globalApiMixin, localApiMixin, EventInit, wrapInit } from "./init";

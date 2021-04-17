@@ -1,14 +1,14 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:59
- * @LastEditTime: 2021-04-16 16:31:04
+ * @LastEditTime: 2021-04-17 19:49:17
  * @LastEditors: your name
  * @Description: 请添加介绍
- * @FilePath: \arrExtend\src\Methods\MethodStrategy.js
+ * @FilePath: \ExArray\src\Methods\MethodStrategy.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import Exarr from "../index";
-import {changeEle,addEle, use} from '../utils/index'
+import { changeEle, addEle, use } from "../utils/index";
 
 let callTypes = [
   "concat",
@@ -51,9 +51,7 @@ let callTypes = [
   "add",
   "change",
   "delete",
-
 ];
-
 
 export default function (name, params, r) {
   let ei = this;
@@ -62,38 +60,57 @@ export default function (name, params, r) {
       if (params.length != 0) {
         Add();
       }
+      break;
     }
-    case "pop":{
+    case "pop": {
       Delete();
+      break;
     }
-    case "shift":{
+    case "shift": {
       Delete();
+      break;
     }
-    case "unshift":{
+    case "unshift": {
       if (params.length != 0) {
         Add();
       }
+      break;
     }
-    case "copyWithin":{
-      Add();
+    case "copyWithin": {
+      //使用 copyWithin 从数组中复制一部分到同数组中的另外位置
+      if (params[0] != null) {
+        Add();
+      }
+      break;
     }
-    case "reverse":{
-      Change(); 
-    }
-    case "sort":{
+    case "reverse": {
       Change();
+      break;
     }
-    case "fill":{
+    case "sort": {
       Change();
+      break;
+    }
+    case "fill": {
+      Change();
+      break;
+    }
+    case "splice": {
+      //splice比较复杂，有增删改三种事件
+      //参数[0]删除起始下标，参数[1]为删除总数,参数[1+n]为添加元素
+      if (params[2]) {
+        Add();
+      }
+      if (params[1] >= 1) {
+        Delete();
+      }
     }
   }
 
-
-
   function Add() {
     ei.event.emit("add", params, r, ei);
-    params=transform(params,ei);
-    changeEle.call(ei,ei.length-1,params[0])
+    params = transform(params);
+    use.call(ei, "splice", ei, ei.length - params.length, ei.length, ...params);
     depth(params, ei, name);
   }
   function Change() {
@@ -104,35 +121,11 @@ export default function (name, params, r) {
   }
 }
 
-function transform(params,ei) {
+function transform(params) {
   for (let i = 0; i < params.length; i++) {
-    let cur = params[i];
-    if (!Array.isArray(cur)||cur.on)continue;
-    
-    //如果是数组
-    if(isMoreLayer(cur)){
-      let r=new Exarr();
-      // use.call(r,'push',...transform(cur))
-      r.push(...transform(cur))
-      params[i]=transform(r);
-    }else{
-      let r=new Exarr();
-      r.push(...cur)
-      params[i]=r
-    }
+    params[i] = Exarr.transform(params[i]);
   }
   return params;
-}
-function isMoreLayer(arr) {
-  for (let i = 0; i < arr.length; i++) {
-    let cur = arr[i];
-    if (Array.isArray(cur)) {
-      return true;
-    } else {
-      continue;
-    }
-  }
-  return false;
 }
 
 function depth(params, ei, fn) {

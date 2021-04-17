@@ -1,6 +1,6 @@
 {
-  "name": "ExArray",
-  "version": "1.0.0",
+  "name": "exarray",
+  "version": "1.0.1",
   "description": "A more powerful array base on the original array",
   "main": "dist/bundle.js",
   "scripts": {
@@ -8,7 +8,7 @@
     "build": "rollup -c ",
     "start": "concurrently \"rollup -c -w\" \"nodemon dist/bundle.js\" "
   },
-  "author": "",
+  "author": "moushicheng",
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {

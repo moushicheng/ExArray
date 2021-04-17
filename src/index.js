@@ -26,7 +26,8 @@ export default class Exarr extends ExArray{ //继承只是继承其静态方法�
   }
 }
   
-let b = new Exarr(3);
+
+let b = new Exarr(4);
 b.on(
   "add",
   function (params, back, array) {
@@ -41,49 +42,20 @@ b.on(
   "change",
   function (params, back, array) {
     console.log('change');
-    console.log("参数: " + params);
-    console.log("返回: " + back);
-    console.log('触发数组: ' +array);
+    // console.log("参数: " + params);
+    // console.log("返回: " + back);
+    // console.log('触发数组: ' +array);
   },
   true
 );
-
-// console.log(b);
-// b.on(
-//   "push",
-//   function (params, back, array) {
-//     console.log('push');
-//     console.log("params: " + params);
-//     console.log("push returned value : " + back);
-//     console.log('array : ' +array);
-//   },
-//   false
-// );
+b.on(
+  "delete",
+  function (params, back, array) {
+    console.log('delete');
+    console.log("参数: " + params);
+    console.log("返回: " + back);
+    console.log('触发数组: ' +array); 
+  },
+  true
+);
 console.log(b.show());
-// console.log(b);
-
-// console.log(b.collapse().show());
-// console.log(b.show());
-
-// b.on('push',function(params,r,array){
-//   //check bug1:array cant analysis by `${array}`
-//   // console.log('在push方法上添加事件');
-//   // console.log(`event:push params:${params} return:${r} `);
-//   // console.log('当前数组'+array);
-// },true)
-
-// console.log(a.show());
-// console.log(a);
-
-// console.log(proxy.show());
-
-// a.on('collapse',function(params,r,array){
-//   //check bug1:array cant analysis by `${array}`
-//   console.log('在collapse方法上添加事件');
-//   console.log(`event:push params:${params} return:${r} `);
-// })
-
-// a.push(1)
-
-// console.log(a.show());
-// console.log(a.total());
