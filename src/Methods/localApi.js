@@ -1,16 +1,16 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:19
- * @LastEditTime: 2021-04-16 16:30:14
+ * @LastEditTime: 2021-04-18 11:32:36
  * @LastEditors: your name
  * @Description: 请添加介绍
- * @FilePath: \arrExtend\src\Methods\localApi.js
+ * @FilePath: \ExArray\src\Methods\localApi.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import Exarr from "../index";
 import  ExArray from '../instance' 
 
-import { use, addEle } from "../utils/index";
+import { use,isNum } from "../utils/index";
 
 /**
  * @description: To make a multidimensional array one-dimensional
@@ -79,12 +79,15 @@ function show(array) {
   return action(array);
 }
 
-function total(array) {
-  if (!array) array = this;
-  array = collapse(arr);
+function total(arr) {
+  if (!arr) arr = this;
+  arr = collapse(arr);
   return arr.reduce((total, cur) => {
-    return (total += cur);
-  });
+    if(isNum(cur)){
+      total+=cur;
+    }
+    return total
+  },0);
 }
 
 function setFN(arr) {

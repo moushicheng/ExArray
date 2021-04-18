@@ -1,10 +1,10 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 21:08:29
- * @LastEditTime: 2021-04-16 13:29:06
+ * @LastEditTime: 2021-04-17 20:29:29
  * @LastEditors: your name
  * @Description: 请添加介绍
- * @FilePath: \arrExtend\src\utils\index.js
+ * @FilePath: \ExArray\src\utils\index.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 
@@ -25,4 +25,7 @@ export function addEle(i,ele){
 }
 export function changeEle(i,ele){
    use.call(this,'splice',this,i,1,ele); 
+}
+export function isNum(value){
+   return typeof value === 'number' && !isNaN(value);
 }

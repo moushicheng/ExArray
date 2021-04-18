@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:59
- * @LastEditTime: 2021-04-17 19:49:17
+ * @LastEditTime: 2021-04-17 23:13:41
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \ExArray\src\Methods\MethodStrategy.js
@@ -58,7 +58,7 @@ export default function (name, params, r) {
   switch (name) {
     case "push": {
       if (params.length != 0) {
-        Add();
+        Add(ei.length - params.length, ei.length);
       }
       break;
     }
@@ -72,7 +72,7 @@ export default function (name, params, r) {
     }
     case "unshift": {
       if (params.length != 0) {
-        Add();
+        Add(0,params.length);
       }
       break;
     }
@@ -107,14 +107,22 @@ export default function (name, params, r) {
     }
   }
 
-  function Add() {
+  function Add(i,j) {
     ei.event.emit("add", params, r, ei);
+    if(!i&&!j)return;
     params = transform(params);
-    use.call(ei, "splice", ei, ei.length - params.length, ei.length, ...params);
-    depth(params, ei, name);
+    depth(params, ei);
+    use.call(ei, "splice", ei, i,j, ...params); //不够定制化
   }
-  function Change() {
+  function Change(i,j) {
     ei.event.emit("change", params, r);
+    //修改也要走一套转化流程
+    //深度绑定也要走一套
+    //修改位置也要决定好
+    if(!i&&!j)return;
+    params = transform(params);
+    depth(params, ei);
+    use.call(ei, "splice", ei, i,j, ...params); //不够定制化
   }
   function Delete() {
     ei.event.emit("delete", params, r);
@@ -128,13 +136,14 @@ function transform(params) {
   return params;
 }
 
-function depth(params, ei, fn) {
+function depth(params, ei) {
   function action(params, ei) {
     for (let p of params) {
       if (Array.isArray(p)) {
-        action(p, p); //向下挖掘
-        p.setFN(ei);
         _depth(p, ei); //向上查询并绑定
+        p.setFN(ei);
+        action(p, p); //向下挖掘
+   
       } else {
         continue;
       }

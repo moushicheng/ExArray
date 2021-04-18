@@ -1,13 +1,13 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 09:26:54
- * @LastEditTime: 2021-04-17 19:02:38
+ * @LastEditTime: 2021-04-18 13:31:12
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \ExArray\src\event.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
-import { error, use } from "./utils/index";
+import { error} from "./utils/index";
 
 export let callTypes = [
   "concat",
@@ -55,6 +55,7 @@ export class Event {
   constructor() {
     this._callbacks = {};
     this.ei = null;
+    this.executeCount=0;
   }
   on(fn, cb, depthMode = false) {
     if (callTypes.indexOf(fn) == -1) {
@@ -62,9 +63,19 @@ export class Event {
       return;
     }
     let fns = this._callbacks[fn];
-    if (!fns) this._callbacks[fn] = [];
+    if (!fns) this._callbacks[fn] = []; 
+    let wrapCb=function(params, r, curArr){
+      let k=this.executeCount++; //拦截回调触发回调引起无限递归 <- 防止递归的单例模式
+      if(k!=0){
+        this.executeCount--;
+        return;
+      }
+      cb(params, r, curArr); 
+    }
+
+
     this._callbacks[fn].push({
-      cb,
+      cb:wrapCb,
       dm: depthMode,
     });
     // 深度绑定
@@ -77,7 +88,7 @@ export class Event {
     if (!fns) return;
     if (!curArr) curArr = this.ei;
     for (let i = 0; i < fns.length; i++) {
-      fns[i].cb(params, r, curArr);
+      fns[i].cb.call(this,params, r, curArr);
     }
   }
   set(ei) {

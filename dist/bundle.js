@@ -7,10 +7,10 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 21:08:29
-    * @LastEditTime: 2021-04-16 13:29:06
+    * @LastEditTime: 2021-04-17 20:29:29
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\utils\index.js
+    * @FilePath: \ExArray\src\utils\index.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
@@ -24,6 +24,9 @@
       let r= Array.prototype[fn].call(arr,...params); //二级拦截->拦截this上的事件传递
       this.setM(true);
       return r;
+   } 
+   function isNum(value){
+      return typeof value === 'number' && !isNaN(value);
    }
 
    /*
@@ -79,10 +82,10 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:19
-    * @LastEditTime: 2021-04-16 16:30:14
+    * @LastEditTime: 2021-04-18 11:32:36
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\Methods\localApi.js
+    * @FilePath: \ExArray\src\Methods\localApi.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
@@ -153,11 +156,15 @@
      return action(array);
    }
 
-   function total(array) {
-     collapse(arr);
+   function total(arr) {
+     if (!arr) arr = this;
+     arr = collapse(arr);
      return arr.reduce((total, cur) => {
-       return (total += cur);
-     });
+       if(isNum(cur)){
+         total+=cur;
+       }
+       return total
+     },0);
    }
 
    function setFN(arr) {
@@ -179,7 +186,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:59
-    * @LastEditTime: 2021-04-17 19:49:17
+    * @LastEditTime: 2021-04-17 23:13:41
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\Methods\MethodStrategy.js
@@ -191,7 +198,7 @@
      switch (name) {
        case "push": {
          if (params.length != 0) {
-           Add();
+           Add(ei.length - params.length, ei.length);
          }
          break;
        }
@@ -205,7 +212,7 @@
        }
        case "unshift": {
          if (params.length != 0) {
-           Add();
+           Add(0,params.length);
          }
          break;
        }
@@ -240,14 +247,22 @@
        }
      }
 
-     function Add() {
+     function Add(i,j) {
        ei.event.emit("add", params, r, ei);
+       if(!i&&!j)return;
        params = transform(params);
-       use.call(ei, "splice", ei, ei.length - params.length, ei.length, ...params);
        depth(params, ei);
+       use.call(ei, "splice", ei, i,j, ...params); //不够定制化
      }
-     function Change() {
+     function Change(i,j) {
        ei.event.emit("change", params, r);
+       //修改也要走一套转化流程
+       //深度绑定也要走一套
+       //修改位置也要决定好
+       if(!i&&!j)return;
+       params = transform(params);
+       depth(params, ei);
+       use.call(ei, "splice", ei, i,j, ...params); //不够定制化
      }
      function Delete() {
        ei.event.emit("delete", params, r);
@@ -261,13 +276,14 @@
      return params;
    }
 
-   function depth(params, ei, fn) {
+   function depth(params, ei) {
      function action(params, ei) {
        for (let p of params) {
          if (Array.isArray(p)) {
-           action(p, p); //向下挖掘
-           p.setFN(ei);
            _depth(p, ei); //向上查询并绑定
+           p.setFN(ei);
+           action(p, p); //向下挖掘
+      
          } else {
            continue;
          }
@@ -308,7 +324,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-17 19:02:38
+    * @LastEditTime: 2021-04-18 13:31:12
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\event.js
@@ -361,6 +377,7 @@
      constructor() {
        this._callbacks = {};
        this.ei = null;
+       this.executeCount=0;
      }
      on(fn, cb, depthMode = false) {
        if (callTypes.indexOf(fn) == -1) {
@@ -368,9 +385,19 @@
          return;
        }
        let fns = this._callbacks[fn];
-       if (!fns) this._callbacks[fn] = [];
+       if (!fns) this._callbacks[fn] = []; 
+       let wrapCb=function(params, r, curArr){
+         let k=this.executeCount++; //拦截回调触发回调引起无限递归 <- 防止递归的单例模式
+         if(k!=0){
+           this.executeCount--;
+           return;
+         }
+         cb(params, r, curArr); 
+       };
+
+
        this._callbacks[fn].push({
-         cb,
+         cb:wrapCb,
          dm: depthMode,
        });
        // 深度绑定
@@ -383,7 +410,7 @@
        if (!fns) return;
        if (!curArr) curArr = this.ei;
        for (let i = 0; i < fns.length; i++) {
-         fns[i].cb(params, r, curArr);
+         fns[i].cb.call(this,params, r, curArr);
        }
      }
      set(ei) {
@@ -414,10 +441,10 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-10 23:24:35
-    * @LastEditTime: 2021-04-15 09:40:01
+    * @LastEditTime: 2021-04-18 11:33:49
     * @LastEditors: your name
     * @Description: 请添加介绍
-    * @FilePath: \arrExtend\src\init.js
+    * @FilePath: \ExArray\src\init.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
 
@@ -466,7 +493,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 19:16:30
-    * @LastEditTime: 2021-04-17 19:08:39
+    * @LastEditTime: 2021-04-18 11:13:45
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\instance.js
@@ -483,7 +510,6 @@
        this.__Ex__='ExArray';
        EventInit.call(this);
        this.fill(0); //如果是一维数组直接fill即可  
-       this.setVal(1);
      }
      // static install() {
      //   let m = {}; 
@@ -513,7 +539,7 @@
            //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
            if (obj.isNotMethod && Number.isInteger(property*1)) {
              //add 
-             if(property<obj.length-1)obj.event.emit("change", property, value, obj);
+             if(property<=obj.length-1)obj.event.emit("change", property, value, obj);
              else {
                obj.event.emit("add", property, value, obj);
              }
@@ -530,9 +556,10 @@
      "add",
      function (params, back, array) {
        console.log('add');
-       console.log("参数: " + params);
+       console.log(params);
        console.log("返回: " + back);
        console.log('触发数组: ' +array);
+       console.log(array.show());
      },
      true
    );
@@ -543,6 +570,7 @@
        // console.log("参数: " + params);
        // console.log("返回: " + back);
        // console.log('触发数组: ' +array);
+       console.log(array.show());
      },
      true
    );
@@ -550,13 +578,13 @@
      "delete",
      function (params, back, array) {
        console.log('delete');
-       console.log("参数: " + params);
-       console.log("返回: " + back);
-       console.log('触发数组: ' +array); 
+       // console.log("参数: " + params);
+       // console.log("返回: " + back);
+       // console.log('触发数组: ' +array); 
      },
      true
    );
-   console.log(b.show());
+   b[0]=1;
 
    return Exarr;
 

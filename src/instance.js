@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 19:16:30
- * @LastEditTime: 2021-04-17 19:08:39
+ * @LastEditTime: 2021-04-18 11:13:45
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \ExArray\src\instance.js
@@ -19,7 +19,6 @@ export default class ExArray extends Array {
     this.__Ex__='ExArray';
     EventInit.call(this);
     this.fill(0) //如果是一维数组直接fill即可  
-    this.setVal(1);
   }
   // static install() {
   //   let m = {}; 

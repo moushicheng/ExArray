@@ -1,10 +1,10 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-10 23:24:35
- * @LastEditTime: 2021-04-15 09:40:01
+ * @LastEditTime: 2021-04-18 11:33:49
  * @LastEditors: your name
  * @Description: 请添加介绍
- * @FilePath: \arrExtend\src\init.js
+ * @FilePath: \ExArray\src\init.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import  Methods  from "./Methods/index";
