@@ -16,8 +16,9 @@ It's still under development,There may be some bugs.
 - **more practical api**
 
 # install
-
-1. npm install exarray
+```git
+npm install exarray
+```
 
 then
 
@@ -84,10 +85,11 @@ a.push(1);
     },
     false
 );
-  ```
-
-  when you add a new element to array,your will touch off callback which you bind to Add/Delete/Change,
-
+  
+```
+  
+when you add a new element to array,your will touch off callback which you bind to Add/Delete/Change,
+  
   such as:
   
   ```javascript
