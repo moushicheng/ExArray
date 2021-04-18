@@ -27,7 +27,6 @@ let Exarr=require('exarray');
 ```
 
 
-
 # use
 
 - You can create arrays of arbitrary dimensions
@@ -84,15 +83,14 @@ a.push(1);
       console.log("array : " +array);
     },
     false
-);
-  
-```
-  
+  );
+  ```
+
 when you add a new element to array,your will touch off callback which you bind to Add/Delete/Change,
-  
-  such as:
-  
-  ```javascript
+
+such as:
+
+```javascript
   a[2]=1;
   // add
   // params: 2
@@ -103,7 +101,7 @@ when you add a new element to array,your will touch off callback which you bind 
   // params: 1
   // returned value : 5
   // array: 1,1,1,1,1
-  ```
+```
 
 but if you do the following:
 
