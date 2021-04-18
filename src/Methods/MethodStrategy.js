@@ -1,57 +1,15 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:59
- * @LastEditTime: 2021-04-17 23:13:41
+ * @LastEditTime: 2021-04-18 13:40:53
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \ExArray\src\Methods\MethodStrategy.js
  * 可以输入预定的版权声明、个性签名、空行等
  */
 import Exarr from "../index";
-import { changeEle, addEle, use } from "../utils/index";
+import { use } from "../utils/index";
 
-let callTypes = [
-  "concat",
-  "copyWithin",
-  "entries",
-  "every",
-  "fill",
-  "filter",
-  "find",
-  "findIndex",
-  "flat",
-  "flatMap",
-  "forEach",
-  "includes",
-  "indexOf",
-  "join",
-  "keys",
-  "lastIndexOf",
-  "map",
-  "pop",
-  "push",
-  "reduce",
-  "reduceRight",
-  "reverse",
-  "shift",
-  "slice",
-  "some",
-  "sort",
-  "splice",
-  "toLocaleString",
-  "toString",
-  "unshift",
-  "values",
-  "isArray",
-  "from",
-  "collapse",
-  "setOriVal",
-  "show",
-  "total",
-  "add",
-  "change",
-  "delete",
-];
 
 export default function (name, params, r) {
   let ei = this;
@@ -104,6 +62,11 @@ export default function (name, params, r) {
       if (params[1] >= 1) {
         Delete();
       }
+      break;
+    }
+    case "setVal":{
+      Change();
+      break;
     }
   }
 
@@ -112,17 +75,14 @@ export default function (name, params, r) {
     if(!i&&!j)return;
     params = transform(params);
     depth(params, ei);
-    use.call(ei, "splice", ei, i,j, ...params); //不够定制化
+    use.call(ei, "splice", ei, i,j, ...params); 
   }
   function Change(i,j) {
     ei.event.emit("change", params, r);
-    //修改也要走一套转化流程
-    //深度绑定也要走一套
-    //修改位置也要决定好
     if(!i&&!j)return;
     params = transform(params);
     depth(params, ei);
-    use.call(ei, "splice", ei, i,j, ...params); //不够定制化
+    use.call(ei, "splice", ei, i,j, ...params); 
   }
   function Delete() {
     ei.event.emit("delete", params, r);

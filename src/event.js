@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-11 09:26:54
- * @LastEditTime: 2021-04-18 13:31:12
+ * @LastEditTime: 2021-04-18 13:49:29
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \ExArray\src\event.js
@@ -71,6 +71,7 @@ export class Event {
         return;
       }
       cb(params, r, curArr); 
+      this.executeCount--;
     }
 
 

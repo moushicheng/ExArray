@@ -82,7 +82,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:19
-    * @LastEditTime: 2021-04-18 11:32:36
+    * @LastEditTime: 2021-04-18 13:47:33
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\Methods\localApi.js
@@ -186,12 +186,13 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:59
-    * @LastEditTime: 2021-04-17 23:13:41
+    * @LastEditTime: 2021-04-18 13:40:53
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\Methods\MethodStrategy.js
     * 可以输入预定的版权声明、个性签名、空行等
     */
+
 
    function MethodStrategy (name, params, r) {
      let ei = this;
@@ -244,6 +245,11 @@
          if (params[1] >= 1) {
            Delete();
          }
+         break;
+       }
+       case "setVal":{
+         Change();
+         break;
        }
      }
 
@@ -252,17 +258,14 @@
        if(!i&&!j)return;
        params = transform(params);
        depth(params, ei);
-       use.call(ei, "splice", ei, i,j, ...params); //不够定制化
+       use.call(ei, "splice", ei, i,j, ...params); 
      }
      function Change(i,j) {
        ei.event.emit("change", params, r);
-       //修改也要走一套转化流程
-       //深度绑定也要走一套
-       //修改位置也要决定好
        if(!i&&!j)return;
        params = transform(params);
        depth(params, ei);
-       use.call(ei, "splice", ei, i,j, ...params); //不够定制化
+       use.call(ei, "splice", ei, i,j, ...params); 
      }
      function Delete() {
        ei.event.emit("delete", params, r);
@@ -324,7 +327,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-18 13:31:12
+    * @LastEditTime: 2021-04-18 13:49:29
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\event.js
@@ -393,6 +396,7 @@
            return;
          }
          cb(params, r, curArr); 
+         this.executeCount--;
        };
 
 
@@ -549,42 +553,6 @@
        });
      }
    }
-     
-
-   let b = new Exarr(4);
-   b.on(
-     "add",
-     function (params, back, array) {
-       console.log('add');
-       console.log(params);
-       console.log("返回: " + back);
-       console.log('触发数组: ' +array);
-       console.log(array.show());
-     },
-     true
-   );
-   b.on(
-     "change",
-     function (params, back, array) {
-       console.log('change');
-       // console.log("参数: " + params);
-       // console.log("返回: " + back);
-       // console.log('触发数组: ' +array);
-       console.log(array.show());
-     },
-     true
-   );
-   b.on(
-     "delete",
-     function (params, back, array) {
-       console.log('delete');
-       // console.log("参数: " + params);
-       // console.log("返回: " + back);
-       // console.log('触发数组: ' +array); 
-     },
-     true
-   );
-   b[0]=1;
 
    return Exarr;
 

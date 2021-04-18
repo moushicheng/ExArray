@@ -25,39 +25,3 @@ export default class Exarr extends ExArray{ //继承只是继承其静态方法�
     });
   }
 }
-  
-
-let b = new Exarr(4);
-b.on(
-  "add",
-  function (params, back, array) {
-    console.log('add');
-    console.log(params);
-    console.log("返回: " + back);
-    console.log('触发数组: ' +array);
-    console.log(array.show());
-  },
-  true
-);
-b.on(
-  "change",
-  function (params, back, array) {
-    console.log('change');
-    // console.log("参数: " + params);
-    // console.log("返回: " + back);
-    // console.log('触发数组: ' +array);
-    console.log(array.show());
-  },
-  true
-);
-b.on(
-  "delete",
-  function (params, back, array) {
-    console.log('delete');
-    // console.log("参数: " + params);
-    // console.log("返回: " + back);
-    // console.log('触发数组: ' +array); 
-  },
-  true
-)
-b[0]=1 

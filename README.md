@@ -3,8 +3,10 @@
 # ExArray
 
 👯✨😄📫
+
 A more powerful array base on the original array
-It's still under development,There may be plenty of bugs.
+
+It's still under development,There may be some bugs.
 
 # feature
 
@@ -20,7 +22,7 @@ It's still under development,There may be plenty of bugs.
 then
 
 ```
-let Exarr=require('exarray'); //Exarr can be any name
+let Exarr=require('exarray');
 ```
 
 
@@ -88,7 +90,7 @@ a.push(1);
 
   such as:
   
-  ```
+  ```javascript
   a[2]=1;
   // add
   // params: 2
@@ -103,7 +105,7 @@ a.push(1);
 
 but if you do the following:
 
-```
+```javascript
 a[0][1]=1
 ```
 
@@ -111,7 +113,7 @@ it can't execute add callback,you must change third argument to true ,this allow
 
 For example:
 
-```
+```JavaScript
 a.on(
   "add",
   function (params, back, array) {
