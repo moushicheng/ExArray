@@ -550,8 +550,10 @@
            //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
            if (obj.isNotMethod && Number.isInteger(property*1)) {
              //add 
-             if(property<=obj.length-1)obj.event.emit("change", property, value, obj);
+             console.log(property,obj.length-1);
+             if(property<obj.length-1)obj.event.emit("change", property, value, obj);
              else {
+               console.log('add');
                obj.event.emit("add", property, value, obj);
              }
            }
@@ -560,26 +562,28 @@
        });
      }
    }
-
-
    let a=new Exarr(3);
-   a.on('push',function(){
-     console.log('push');
-   });
-   a.on('change',function(){
-     console.log('change');
-   });
-   a.on('delete',function(){
-     console.log('delete');
-   });
-   a.on('add',function(){
-     console.log('add');
-   });
-   a[0]=1;
-   a[1]=2;
-   a[2]=3;
-   console.log(a.show()); 
-   console.log(a.getRandomObj());
+   console.log(a.show());
+   a.on(
+     "add",
+     function (params, back, array) {
+       console.log("add");
+       console.log("params: " + params);
+       console.log("returned value : " + back);
+       console.log("array : " +array);
+     },
+     false
+   );
+   a.on(
+     "change",
+     function (params, back, array) {
+       console.log("change");
+       console.log("params: " + params);
+       console.log("returned value : " + back);
+       console.log("array : " +array);
+     },
+     false
+   );
 
    return Exarr;
 

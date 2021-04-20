@@ -32,13 +32,13 @@ let Exarr=require('exarray');
 
 - You can create arrays of arbitrary dimensions
 
-  ```
-  let a=new Exarr(2,2);
+  ```javascript
+  let a=new Exarr(2,2); 
   ```
 
 - use a.show() to print your array
 
-  ```
+  ```javascript
   console.log(a.show());
   //[ [ 0, 0 ], [ 0, 0 ] ]
   ```
