@@ -82,7 +82,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-14 18:29:19
-    * @LastEditTime: 2021-04-18 13:47:33
+    * @LastEditTime: 2021-04-20 12:52:17
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\Methods\localApi.js
@@ -173,6 +173,15 @@
    function setM(s){
     this.isNotMethod=s;
    }
+   function getRandomObj(obj, len = null) {
+     obj=obj?obj:this;
+     let length = len ? len : obj.length;
+
+     let num = Math.random();
+     num = Math.ceil(num * length) - 1;
+     if (num < 0) num = 0;
+     return obj[num];
+   }
 
    var localApi = {
      collapse,
@@ -180,7 +189,8 @@
      show,
      total,
      setFN,
-     setM
+     setM,
+     getRandomObj
    };
 
    /*
@@ -327,7 +337,7 @@
    /*
     * @Author: 某时橙
     * @Date: 2021-04-11 09:26:54
-    * @LastEditTime: 2021-04-18 13:49:29
+    * @LastEditTime: 2021-04-20 09:46:14
     * @LastEditors: your name
     * @Description: 请添加介绍
     * @FilePath: \ExArray\src\event.js
@@ -380,7 +390,7 @@
      constructor() {
        this._callbacks = {};
        this.ei = null;
-       this.executeCount=0;
+       this.executeCount = 0;
      }
      on(fn, cb, depthMode = false) {
        if (callTypes.indexOf(fn) == -1) {
@@ -388,20 +398,17 @@
          return;
        }
        let fns = this._callbacks[fn];
-       if (!fns) this._callbacks[fn] = []; 
-       let wrapCb=function(params, r, curArr){
-         let k=this.executeCount++; //拦截回调触发回调引起无限递归 <- 防止递归的单例模式
-         if(k!=0){
-           this.executeCount--;
-           return;
-         }
-         cb(params, r, curArr); 
-         this.executeCount--;
-       };
-
-
+       if (!fns) this._callbacks[fn] = [];
        this._callbacks[fn].push({
-         cb:wrapCb,
+         cb: function (params, r, curArr) {
+           let k = this.executeCount++; //拦截回调触发回调引起无限递归 <- 防止递归的单例模式
+           if (k != 0) {
+             this.executeCount--;
+             return;
+           }
+           cb(params, r, curArr);
+           this.executeCount--;
+         },
          dm: depthMode,
        });
        // 深度绑定
@@ -414,7 +421,7 @@
        if (!fns) return;
        if (!curArr) curArr = this.ei;
        for (let i = 0; i < fns.length; i++) {
-         fns[i].cb.call(this,params, r, curArr);
+         fns[i].cb.call(this, params, r, curArr);
        }
      }
      set(ei) {
@@ -553,6 +560,26 @@
        });
      }
    }
+
+
+   let a=new Exarr(3);
+   a.on('push',function(){
+     console.log('push');
+   });
+   a.on('change',function(){
+     console.log('change');
+   });
+   a.on('delete',function(){
+     console.log('delete');
+   });
+   a.on('add',function(){
+     console.log('add');
+   });
+   a[0]=1;
+   a[1]=2;
+   a[2]=3;
+   console.log(a.show()); 
+   console.log(a.getRandomObj());
 
    return Exarr;
 

@@ -1,7 +1,7 @@
 /*
  * @Author: 某时橙
  * @Date: 2021-04-14 18:29:19
- * @LastEditTime: 2021-04-18 13:47:33
+ * @LastEditTime: 2021-04-20 12:52:17
  * @LastEditors: your name
  * @Description: 请添加介绍
  * @FilePath: \ExArray\src\Methods\localApi.js
@@ -96,6 +96,15 @@ function setFN(arr) {
 function setM(s){
  this.isNotMethod=s;
 }
+function getRandomObj(obj, len = null) {
+  obj=obj?obj:this;
+  let length = len ? len : obj.length;
+
+  let num = Math.random();
+  num = Math.ceil(num * length) - 1;
+  if (num < 0) num = 0;
+  return obj[num];
+}
 
 export default {
   collapse,
@@ -103,5 +112,6 @@ export default {
   show,
   total,
   setFN,
-  setM
+  setM,
+  getRandomObj
 };

@@ -25,3 +25,5 @@ export default class Exarr extends ExArray{ //继承只是继承其静态方法�
     });
   }
 }
+
+

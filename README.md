@@ -27,6 +27,7 @@ let Exarr=require('exarray');
 ```
 
 
+
 # use
 
 - You can create arrays of arbitrary dimensions
@@ -102,6 +103,7 @@ such as:
   // returned value : 5
   // array: 1,1,1,1,1
 ```
+
 
 but if you do the following:
 
