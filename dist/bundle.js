@@ -546,14 +546,12 @@
          },
          set(obj, property, value) {
            //再怎么说，SET这玩意检测的范围也太广了...........
+            let len=obj.length;
             obj[property] = value;
            //拦截器的操作顺序和实际代码顺序相关 能拦截是因为先设置的isMethod=true，再执行的方法
            if (obj.isNotMethod && Number.isInteger(property*1)) {
-             //add 
-             console.log(property,obj.length-1);
-             if(property<obj.length-1)obj.event.emit("change", property, value, obj);
+             if(obj.length<=len)obj.event.emit("change", property, value, obj);
              else {
-               console.log('add');
                obj.event.emit("add", property, value, obj);
              }
            }
@@ -562,28 +560,6 @@
        });
      }
    }
-   let a=new Exarr(3);
-   console.log(a.show());
-   a.on(
-     "add",
-     function (params, back, array) {
-       console.log("add");
-       console.log("params: " + params);
-       console.log("returned value : " + back);
-       console.log("array : " +array);
-     },
-     false
-   );
-   a.on(
-     "change",
-     function (params, back, array) {
-       console.log("change");
-       console.log("params: " + params);
-       console.log("returned value : " + back);
-       console.log("array : " +array);
-     },
-     false
-   );
 
    return Exarr;
 
